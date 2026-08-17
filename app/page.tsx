@@ -28,6 +28,12 @@ export default function Home() {
             Build my profile
           </Link>
           <Link
+            href="/resume-coach"
+            className="rounded-control bg-highlighter px-4 py-2.5 text-sm font-semibold text-ink hover:brightness-95"
+          >
+            AI resume builder
+          </Link>
+          <Link
             href="/opportunities"
             className="rounded-control border border-ink/20 px-4 py-2.5 text-sm font-medium hover:bg-ink hover:text-paper"
           >
