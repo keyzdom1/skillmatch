@@ -6,17 +6,30 @@ import type { Opportunity, OpportunityWithMatch } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function OpportunitiesPage() {
+export default async function OpportunitiesPage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
+  const q = (searchParams.q ?? "").trim();
   const [supabase, user] = await Promise.all([
     createServerSupabase(),
     getSessionUser(),
   ]);
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("opportunities")
     .select("*")
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+    .eq("is_active", true);
+
+  if (q) {
+    const pattern = `%${q.replace(/[%_]/g, " ")}%`;
+    query = query.or(
+      `title.ilike.${pattern},company.ilike.${pattern},location.ilike.${pattern},description.ilike.${pattern}`
+    );
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
 
   const opportunities = (data ?? []) as Opportunity[];
 
@@ -38,15 +51,49 @@ export default async function OpportunitiesPage() {
         )}
       </div>
 
+      <form
+        method="GET"
+        action="/opportunities"
+        className="flex w-full max-w-xl gap-2"
+        role="search"
+      >
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Search by title, company, location…"
+          className="w-full rounded-control border border-slate/40 bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
+        />
+        <button type="submit" className="btn-primary">
+          Search
+        </button>
+        {q && (
+          <Link
+            href="/opportunities"
+            className="rounded-control border border-ink/20 px-3 py-2.5 text-sm font-medium hover:bg-ink hover:text-paper"
+          >
+            Clear
+          </Link>
+        )}
+      </form>
+
       {opportunities.length === 0 ? (
         <div className="card flex flex-col items-center gap-3 py-16 text-center">
-          <p className="font-display text-xl font-semibold">No opportunities yet</p>
-          <p className="max-w-sm text-sm text-ink/60">
-            {user
-              ? "Be the first to post one — it only takes a minute."
-              : "Create an account to post the first opportunity."}
+          <p className="font-display text-xl font-semibold">
+            {q ? `No results for “${q}”` : "No opportunities yet"}
           </p>
-          {user ? (
+          <p className="max-w-sm text-sm text-ink/60">
+            {q
+              ? "Try a different search term — title, company, or location."
+              : user
+                ? "Be the first to post one — it only takes a minute."
+                : "Create an account to post the first opportunity."}
+          </p>
+          {q ? (
+            <Link href="/opportunities" className="btn-primary">
+              Clear search
+            </Link>
+          ) : user ? (
             <Link href="/opportunities/new" className="btn-primary">
               Post an opportunity
             </Link>
