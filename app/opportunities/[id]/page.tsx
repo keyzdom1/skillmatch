@@ -71,7 +71,15 @@ export default async function OpportunityDetailPage({
               Applications for this opportunity are closed.
             </p>
           ) : user ? (
-            <ApplyButton opportunityId={opportunity.id} />
+            <div className="flex flex-wrap items-center gap-3">
+              <ApplyButton opportunityId={opportunity.id} />
+              <Link
+                href={`/resume-coach?opportunityId=${opportunity.id}`}
+                className="rounded-control border border-ink/20 px-4 py-2.5 text-sm font-medium hover:bg-ink hover:text-paper"
+              >
+                AI resume coach
+              </Link>
+            </div>
           ) : (
             <Link
               href={`/login?next=/opportunities/${opportunity.id}`}
