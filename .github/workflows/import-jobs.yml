@@ -1,0 +1,23 @@
+# Daily import of job listings (Remotive + Arbeitnow) into SkillMatch.
+# Run manually anytime with the "Run workflow" button.
+name: Import jobs
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      HF_API_KEY: ${{ secrets.HF_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run importer
+        run: node scripts/import-jobs.mjs

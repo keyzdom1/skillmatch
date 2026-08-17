@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-ink: #1D2B4F;
+  --color-paper: #F5F6F2;
+  --color-highlighter: #D7FF3D;
+  --color-coral: #FF5A3C;
+  --color-teal: #16866B;
+  --color-slate: #8A8F9C;
+
+  --radius-control: 8px;
+  --radius-card: 16px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* Example component classes — adjust as the design evolves */
+
+.btn-primary {
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  border-radius: var(--radius-control);
+  padding: var(--space-3) var(--space-4);
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: #14213D;
+}
+
+.card {
+  background-color: #ffffff;
+  border: 0.5px solid var(--color-slate);
+  border-radius: var(--radius-card);
+  padding: var(--space-4) var(--space-4);
+}
+
+.match-stamp {
+  background-color: var(--color-highlighter);
+  color: var(--color-ink);
+  border: 1.5px solid var(--color-ink);
+  border-radius: 50%;
+  transform: rotate(-6deg);
+  font-family: var(--font-plex-mono), monospace;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tag {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.tag-neutral {
+  background-color: #EEF0E9;
+  color: var(--color-ink);
+}
+
+.tag-urgent {
+  background-color: #FFE9E3;
+  color: #A83C26;
+}
