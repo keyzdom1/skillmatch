@@ -25,7 +25,13 @@ type InitialState = Partial<
   >
 > & { skills?: string[] | null };
 
-export default function ProfileForm({ initial }: { initial: InitialState }) {
+export default function ProfileForm({
+  initial,
+  onSaved,
+}: {
+  initial: InitialState;
+  onSaved?: () => void;
+}) {
   const resumeStored = initial.resumeUrl ?? null;
   const resumeIsLegacy = resumeStored ? resumeStored.startsWith("http") : false;
 
@@ -148,6 +154,7 @@ export default function ProfileForm({ initial }: { initial: InitialState }) {
       }
       if (data?.warning) setWarning(data.warning);
       setSaved(true);
+      onSaved?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save profile");
     } finally {

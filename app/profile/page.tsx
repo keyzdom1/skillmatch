@@ -1,45 +1,56 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ProfileForm from "@/components/ProfileForm";
+import ProfileView, { type ProfileData } from "@/components/ProfileView";
 
-type ProfileData = {
-  full_name: string | null;
-  headline: string | null;
-  bio: string | null;
-  skills: string[];
-  education: string | null;
-  experience: string | null;
-  resume_url: string | null;
-  avatar_url: string | null;
-};
+function hasFilledProfile(profile: ProfileData | null): boolean {
+  if (!profile) return false;
+  return Boolean(
+    profile.full_name ||
+      profile.headline ||
+      profile.bio ||
+      profile.education ||
+      profile.experience ||
+      profile.avatar_url ||
+      profile.resume_url ||
+      (profile.skills?.length ?? 0) > 0
+  );
+}
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadProfile = useCallback(() => {
+    setLoading(true);
+    setError(null);
     fetch("/api/profile")
       .then((res) => {
         if (!res.ok) throw new Error("Could not load profile");
         return res.json();
       })
       .then((data) => {
-        if (!cancelled) setProfile(data.profile);
+        setProfile(data.profile);
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Could not load profile");
+        setError(
+          err instanceof Error ? err.message : "Could not load profile"
+        );
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  const filled = hasFilledProfile(profile);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -50,13 +61,46 @@ export default function ProfilePage() {
             Saving your profile recalculates your matches.
           </p>
         </div>
-        <Link href="/matches" className="rounded-control border border-ink/20 px-3 py-1.5 text-sm font-medium hover:bg-ink hover:text-paper">
-          See my matches
-        </Link>
+        <div className="flex items-center gap-3">
+          {filled && !editing && (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="btn-primary"
+            >
+              Edit profile
+            </button>
+          )}
+          {filled && editing && (
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="rounded-control border border-ink/20 px-3 py-1.5 text-sm font-medium hover:bg-ink hover:text-paper"
+            >
+              Cancel
+            </button>
+          )}
+          <Link
+            href="/matches"
+            className="rounded-control border border-ink/20 px-3 py-1.5 text-sm font-medium hover:bg-ink hover:text-paper"
+          >
+            See my matches
+          </Link>
+        </div>
       </div>
       {error && <p className="text-sm font-medium text-coral">{error}</p>}
       {loading ? (
         <p className="text-sm text-ink/60">Loading profile…</p>
+      ) : editing ? (
+        <ProfileForm
+          initial={profile ?? {}}
+          onSaved={() => {
+            setEditing(false);
+            loadProfile();
+          }}
+        />
+      ) : filled ? (
+        <ProfileView profile={profile as ProfileData} onEdit={() => setEditing(true)} />
       ) : (
         <ProfileForm initial={profile ?? {}} />
       )}
