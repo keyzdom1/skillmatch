@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 const inputClass =
   "w-full rounded-control border border-slate/40 bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink";
@@ -66,6 +67,12 @@ export default function SignupPage() {
         <p className="mt-1 text-sm text-ink/60">
           One profile. Ranked matches. Zero spam.
         </p>
+      </div>
+      <GoogleSignInButton label="Sign up with Google" />
+      <div className="flex items-center gap-3 text-xs text-ink/40">
+        <span className="h-px flex-1 bg-slate/30" />
+        or with email
+        <span className="h-px flex-1 bg-slate/30" />
       </div>
       <form onSubmit={handleSubmit} className="card flex flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm font-medium">
