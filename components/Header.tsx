@@ -1,9 +1,25 @@
 import Link from "next/link";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionProfile } from "@/lib/auth";
 import { logout } from "@/lib/actions";
+import ThemeToggle from "./ThemeToggle";
+
+function initialsOf(name: string | null | undefined): string {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  return parts
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
 export default async function Header() {
-  const user = await getSessionUser();
+  const { user, profile } = await getSessionProfile();
+
+  const name =
+    profile?.full_name ??
+    user?.user_metadata?.full_name ??
+    user?.user_metadata?.name ??
+    (user?.email ? user.email.split("@")[0] : null);
 
   return (
     <header className="border-b border-slate/30 bg-paper">
@@ -11,7 +27,8 @@ export default async function Header() {
         <Link href="/" className="font-display text-xl font-bold tracking-tight">
           Skill<span className="text-teal">Match</span>
         </Link>
-        <nav className="flex items-center gap-4 sm:gap-6">
+        <nav className="flex items-center gap-3 sm:gap-5">
+          <ThemeToggle />
           <Link
             href="/opportunities"
             className="text-sm font-medium text-ink/70 hover:text-ink"
@@ -32,6 +49,25 @@ export default async function Header() {
               >
                 Profile
               </Link>
+              <div className="flex items-center gap-2">
+                {profile?.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={profile.avatar_url}
+                    alt={name ?? "Your avatar"}
+                    className="h-8 w-8 rounded-full border border-slate/40 object-cover"
+                  />
+                ) : (
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate/40 bg-ink text-xs font-bold text-paper">
+                    {initialsOf(name)}
+                  </span>
+                )}
+                {name && (
+                  <span className="hidden max-w-[10rem] truncate text-sm font-medium text-ink sm:inline">
+                    {name}
+                  </span>
+                )}
+              </div>
               <form action={logout}>
                 <button
                   type="submit"

@@ -34,7 +34,7 @@ export default function Home() {
             Browse opportunities
           </Link>
         </div>
-        <div className="flex items-center gap-3 rounded-control border border-slate/30 bg-white px-4 py-3">
+        <div className="flex items-center gap-3 rounded-control border border-slate/30 bg-card px-4 py-3">
           <MatchStamp percent={0.92} />
           <div className="text-sm text-ink/70">
             <span className="font-mono font-medium text-ink">92% match</span> — your

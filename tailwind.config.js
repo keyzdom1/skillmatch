@@ -1,15 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        ink: "#1D2B4F",
-        paper: "#F5F6F2",
-        highlighter: "#D7FF3D",
-        coral: "#FF5A3C",
-        teal: "#16866B",
-        slate: "#8A8F9C",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        paper: "rgb(var(--color-paper) / <alpha-value>)",
+        card: "rgb(var(--color-card) / <alpha-value>)",
+        highlighter: "rgb(var(--color-highlighter) / <alpha-value>)",
+        coral: "rgb(var(--color-coral) / <alpha-value>)",
+        teal: "rgb(var(--color-teal) / <alpha-value>)",
+        slate: "rgb(var(--color-slate) / <alpha-value>)",
       },
       fontFamily: {
         display: ["var(--font-space-grotesk)", "sans-serif"],

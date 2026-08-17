@@ -1,10 +1,10 @@
 type TagTone = "neutral" | "urgent" | "success" | "info";
 
 const TONES: Record<TagTone, string> = {
-  neutral: "bg-[#EEF0E9] text-ink",
-  urgent: "bg-[#FFE9E3] text-[#A83C26]",
-  success: "bg-[#E1F2EC] text-teal",
-  info: "bg-[#E7EBF4] text-ink/80",
+  neutral: "bg-slate/15 text-ink",
+  urgent: "bg-coral/15 text-coral",
+  success: "bg-teal/15 text-teal",
+  info: "bg-slate/15 text-ink/80",
 };
 
 export default function Tag({

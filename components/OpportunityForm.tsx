@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { OPPORTUNITY_TYPES } from "@/lib/types";
 
 const inputClass =
-  "w-full rounded-control border border-slate/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-ink";
+  "w-full rounded-control border border-slate/40 bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink";
 
 export default function OpportunityForm() {
   const router = useRouter();
@@ -99,7 +99,7 @@ export default function OpportunityForm() {
         />
       </label>
       {error && <p className="text-sm font-medium text-coral">{error}</p>}
-      {warning && <p className="text-sm font-medium text-[#A16207]">{warning}</p>}
+      {warning && <p className="text-sm font-medium text-amber-600">{warning}</p>}
       <div>
         <button
           type="submit"

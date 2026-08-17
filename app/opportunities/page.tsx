@@ -62,7 +62,7 @@ export default async function OpportunitiesPage({
           name="q"
           defaultValue={q}
           placeholder="Search by title, company, location…"
-          className="w-full rounded-control border border-slate/40 bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
+          className="w-full rounded-control border border-slate/40 bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
         />
         <button type="submit" className="btn-primary">
           Search

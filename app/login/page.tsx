@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase";
 
 const inputClass =
-  "w-full rounded-control border border-slate/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-ink";
+  "w-full rounded-control border border-slate/40 bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink";
 
 export default function LoginPage() {
   const router = useRouter();

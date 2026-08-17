@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 
 const inputClass =
-  "w-full rounded-control border border-slate/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-ink";
+  "w-full rounded-control border border-slate/40 bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink";
 
 type FormState = {
   fullName: string;
@@ -282,7 +282,7 @@ export default function ProfileForm({ initial }: { initial: InitialState }) {
 
       {uploaded && <p className="text-sm font-medium text-teal">{uploaded}</p>}
       {error && <p className="text-sm font-medium text-coral">{error}</p>}
-      {warning && <p className="text-sm font-medium text-[#A16207]">{warning}</p>}
+      {warning && <p className="text-sm font-medium text-amber-600">{warning}</p>}
       {saved && !warning && (
         <p className="text-sm font-medium text-teal">Profile saved</p>
       )}

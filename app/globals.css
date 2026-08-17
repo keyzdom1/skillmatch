@@ -3,12 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --color-ink: #1D2B4F;
-  --color-paper: #F5F6F2;
-  --color-highlighter: #D7FF3D;
-  --color-coral: #FF5A3C;
-  --color-teal: #16866B;
-  --color-slate: #8A8F9C;
+  color-scheme: light;
+  --color-ink: 29 43 79;
+  --color-paper: 245 246 242;
+  --color-card: 255 255 255;
+  --color-highlighter: 215 255 61;
+  --color-coral: 255 90 60;
+  --color-teal: 22 134 107;
+  --color-slate: 138 143 156;
 
   --radius-control: 8px;
   --radius-card: 16px;
@@ -19,6 +21,17 @@
   --space-4: 16px;
   --space-6: 24px;
   --space-8: 32px;
+}
+
+.dark {
+  color-scheme: dark;
+  --color-ink: 233 237 246;
+  --color-paper: 13 18 33;
+  --color-card: 24 32 54;
+  --color-highlighter: 228 255 102;
+  --color-coral: 255 107 82;
+  --color-teal: 45 212 168;
+  --color-slate: 148 158 179;
 }
 
 body {
@@ -38,12 +51,12 @@ body {
 }
 
 .btn-primary:hover {
-  background-color: #14213D;
+  filter: brightness(1.1);
 }
 
 .card {
-  background-color: #ffffff;
-  border: 0.5px solid var(--color-slate);
+  background-color: rgb(var(--color-card));
+  border: 0.5px solid rgb(var(--color-slate));
   border-radius: var(--radius-card);
   padding: var(--space-4) var(--space-4);
 }
@@ -69,11 +82,11 @@ body {
 }
 
 .tag-neutral {
-  background-color: #EEF0E9;
-  color: var(--color-ink);
+  background-color: rgb(var(--color-slate) / 0.15);
+  color: rgb(var(--color-ink));
 }
 
 .tag-urgent {
-  background-color: #FFE9E3;
-  color: #A83C26;
+  background-color: rgb(var(--color-coral) / 0.15);
+  color: rgb(var(--color-coral));
 }

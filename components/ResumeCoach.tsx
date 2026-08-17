@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Opportunity } from "@/lib/types";
 
 const inputClass =
-  "w-full rounded-control border border-slate/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-ink";
+  "w-full rounded-control border border-slate/40 bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink";
 
 export default function ResumeCoach({
   opportunities,
