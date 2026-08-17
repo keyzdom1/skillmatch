@@ -24,7 +24,7 @@ export default function Home() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <Link href="/signup" className="btn-primary">
+          <Link href="/signup" className="btn-primary btn-bounce">
             Build my profile
           </Link>
           <Link

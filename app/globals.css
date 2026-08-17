@@ -54,6 +54,30 @@ body {
   filter: brightness(1.1);
 }
 
+@keyframes bounce-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.btn-bounce {
+  animation: bounce-soft 2.5s ease-in-out infinite;
+}
+
+.btn-bounce:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-bounce {
+    animation: none;
+  }
+}
+
 .card {
   background-color: rgb(var(--color-card));
   border: 0.5px solid rgb(var(--color-slate));
