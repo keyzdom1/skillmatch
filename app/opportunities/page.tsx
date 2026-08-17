@@ -54,7 +54,7 @@ export default async function OpportunitiesPage({
       <form
         method="GET"
         action="/opportunities"
-        className="flex w-full max-w-xl gap-2"
+        className="flex w-full max-w-xl flex-wrap gap-2"
         role="search"
       >
         <input
@@ -62,15 +62,18 @@ export default async function OpportunitiesPage({
           name="q"
           defaultValue={q}
           placeholder="Search by title, company, location…"
-          className="w-full rounded-control border border-slate/40 bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
+          className="w-full min-w-0 flex-1 basis-full rounded-control border border-slate/40 bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-ink sm:basis-auto"
         />
-        <button type="submit" className="btn-primary">
+        <button
+          type="submit"
+          className="btn-primary flex-1 whitespace-nowrap sm:flex-none"
+        >
           Search
         </button>
         {q && (
           <Link
             href="/opportunities"
-            className="rounded-control border border-ink/20 px-3 py-2.5 text-sm font-medium hover:bg-ink hover:text-paper"
+            className="flex-1 whitespace-nowrap rounded-control border border-ink/20 px-3 py-2.5 text-center text-sm font-medium hover:bg-ink hover:text-paper sm:flex-none"
           >
             Clear
           </Link>

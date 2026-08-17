@@ -57,7 +57,7 @@ export default function MatchesPage() {
             Add more skills and experience to your profile to improve your
             matches — or check back when new opportunities are posted.
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             <Link href="/profile" className="btn-primary">
               Improve my profile
             </Link>

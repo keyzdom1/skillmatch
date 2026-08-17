@@ -3,6 +3,7 @@ import { getSessionProfile } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { logout } from "@/lib/actions";
 import ThemeToggle from "./ThemeToggle";
+import MobileNav from "./MobileNav";
 
 function initialsOf(name: string | null | undefined): string {
   const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
@@ -22,13 +23,15 @@ export default async function Header() {
     user?.user_metadata?.name ??
     (user?.email ? user.email.split("@")[0] : null);
 
+  const isAdmin = isAdminEmail(user?.email);
+
   return (
     <header className="border-b border-slate/30 bg-paper">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="font-display text-xl font-bold tracking-tight">
           Skill<span className="text-teal">Match</span>
         </Link>
-        <nav className="flex items-center gap-3 sm:gap-5">
+        <nav className="hidden items-center gap-3 sm:gap-5 md:flex">
           <ThemeToggle />
           <Link
             href="/opportunities"
@@ -50,7 +53,7 @@ export default async function Header() {
               >
                 Profile
               </Link>
-              {isAdminEmail(user.email) && (
+              {isAdmin && (
                 <Link
                   href="/admin"
                   className="text-sm font-medium text-teal hover:underline"
@@ -72,7 +75,7 @@ export default async function Header() {
                   </span>
                 )}
                 {name && (
-                  <span className="hidden max-w-[10rem] truncate text-sm font-medium text-ink sm:inline">
+                  <span className="hidden max-w-[10rem] truncate text-sm font-medium text-ink lg:inline">
                     {name}
                   </span>
                 )}
@@ -103,6 +106,15 @@ export default async function Header() {
             </>
           )}
         </nav>
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <MobileNav
+            signedIn={Boolean(user)}
+            isAdmin={isAdmin}
+            name={name}
+            avatarUrl={profile?.avatar_url ?? null}
+          />
+        </div>
       </div>
     </header>
   );
