@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSessionProfile } from "@/lib/auth";
+import { isAdminEmail } from "@/lib/admin";
 import { logout } from "@/lib/actions";
 import ThemeToggle from "./ThemeToggle";
 
@@ -49,6 +50,14 @@ export default async function Header() {
               >
                 Profile
               </Link>
+              {isAdminEmail(user.email) && (
+                <Link
+                  href="/admin"
+                  className="text-sm font-medium text-teal hover:underline"
+                >
+                  Admin
+                </Link>
+              )}
               <div className="flex items-center gap-2">
                 {profile?.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
