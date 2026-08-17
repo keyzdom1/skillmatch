@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabaseServer";
 import { getSessionUser } from "@/lib/auth";
 import ApplyButton from "@/components/ApplyButton";
 import Tag from "@/components/Tag";
+import { stripHtml } from "@/lib/sanitize";
 import type { Opportunity } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -54,7 +55,7 @@ export default async function OpportunityDetailPage({
             <Tag key={skill}>{skill}</Tag>
           ))}
         </div>
-        <p className="whitespace-pre-line text-ink/80">{opportunity.description}</p>
+        <p className="whitespace-pre-line text-ink/80">{stripHtml(opportunity.description)}</p>
         {opportunity.deadline && (
           <p className="font-mono text-sm font-medium">
             Deadline:{" "}

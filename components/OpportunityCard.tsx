@@ -1,6 +1,7 @@
 import Link from "next/link";
 import MatchStamp from "./MatchStamp";
 import Tag from "./Tag";
+import { stripHtml } from "@/lib/sanitize";
 
 function formatDeadline(deadline: string | null) {
   if (!deadline) return null;
@@ -53,7 +54,7 @@ export default function OpportunityCard({
         {matchPercent !== undefined && <MatchStamp percent={matchPercent} />}
       </div>
       <p className="line-clamp-3 text-sm text-ink/70">
-        {opportunity.description}
+        {stripHtml(opportunity.description)}
       </p>
       <div className="mt-auto flex flex-wrap items-center gap-2">
         <Tag tone="info">{opportunity.type}</Tag>
