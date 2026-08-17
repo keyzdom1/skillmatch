@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Tag from "./Tag";
 
 type OverviewData = {
+  me: string;
   stats: {
     profiles: number;
     opportunities: number;
@@ -159,6 +160,32 @@ export default function AdminDashboard() {
     }
   }
 
+  async function removeUser(id: string, email: string) {
+    if (
+      !window.confirm(
+        `Delete account ${email}? Their profile and applications will be removed permanently.`
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/users?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Could not delete account");
+      }
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete account");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (loading) {
     return <p className="text-sm text-ink/60">Loading admin dashboard…</p>;
   }
@@ -180,7 +207,7 @@ export default function AdminDashboard() {
 
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-xl font-bold">Users</h2>
-        <Table head={["Name", "Email", "Headline", "Skills", "Joined"]}>
+        <Table head={["Name", "Email", "Headline", "Skills", "Joined", "Actions"]}>
           {data.users.map((u) => (
             <tr key={u.id}>
               <td className="px-4 py-2.5 font-medium">{u.full_name ?? "—"}</td>
@@ -192,11 +219,25 @@ export default function AdminDashboard() {
                 {u.skills.length > 0 ? u.skills.join(", ") : "—"}
               </td>
               <td className="px-4 py-2.5 text-ink/70">{formatDate(u.created_at)}</td>
+              <td className="px-4 py-2.5">
+                {u.id === data.me ? (
+                  <span className="text-xs text-ink/40">you</span>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => removeUser(u.id, u.email)}
+                    className="rounded-control border border-coral/40 px-2.5 py-1 text-xs font-medium text-coral hover:bg-coral hover:text-paper disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
+                )}
+              </td>
             </tr>
           ))}
           {data.users.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-4 py-4 text-ink/50">
+              <td colSpan={6} className="px-4 py-4 text-ink/50">
                 No profiles yet.
               </td>
             </tr>

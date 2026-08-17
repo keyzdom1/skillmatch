@@ -94,6 +94,7 @@ export async function GET() {
     });
 
     return NextResponse.json({
+      me: adminUser.id,
       stats: {
         profiles: profiles ?? 0,
         opportunities: totalOpportunities ?? 0,
