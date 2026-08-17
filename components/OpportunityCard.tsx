@@ -39,21 +39,21 @@ export default function OpportunityCard({
   return (
     <Link
       href={`/opportunities/${opportunity.id}`}
-      className="card relative flex flex-col gap-3 transition-shadow hover:border-ink/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-teal"
+      className="card relative flex min-w-0 flex-col gap-3 overflow-hidden transition-shadow hover:border-ink/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-teal"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="font-display text-lg font-semibold leading-snug hover:text-teal">
+          <h3 className="break-words font-display text-lg font-semibold leading-snug hover:text-teal">
             {opportunity.title}
           </h3>
-          <p className="mt-0.5 text-sm text-ink/60">
+          <p className="mt-0.5 break-words text-sm text-ink/60">
             {opportunity.company || "Company TBD"}
             {opportunity.location ? ` · ${opportunity.location}` : ""}
           </p>
         </div>
         {matchPercent !== undefined && <MatchStamp percent={matchPercent} />}
       </div>
-      <p className="line-clamp-3 text-sm text-ink/70">
+      <p className="line-clamp-3 break-words text-sm text-ink/70">
         {stripHtml(opportunity.description)}
       </p>
       <div className="mt-auto flex flex-wrap items-center gap-2">

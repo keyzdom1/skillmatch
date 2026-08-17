@@ -14,5 +14,7 @@ export default function Tag({
   tone?: TagTone;
   children: React.ReactNode;
 }) {
-  return <span className={`tag ${TONES[tone]}`}>{children}</span>;
+  return (
+    <span className={`tag max-w-full break-words ${TONES[tone]}`}>{children}</span>
+  );
 }

@@ -42,8 +42,8 @@ export default async function OpportunityDetailPage({
       <article className="card flex flex-col gap-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="font-display text-3xl font-bold">{opportunity.title}</h1>
-            <p className="mt-1 text-ink/60">
+            <h1 className="break-words font-display text-3xl font-bold">{opportunity.title}</h1>
+            <p className="mt-1 break-words text-ink/60">
               {opportunity.company || "Company TBD"}
               {opportunity.location ? ` · ${opportunity.location}` : ""}
             </p>
