@@ -1,11 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { Opportunity } from "@/lib/types";
 
 const inputClass =
   "w-full rounded-control border border-slate/40 bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink";
+
+function renderInline(text: string): ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((part, i) => {
+    const bold = part.match(/^\*\*(.+?)\*\*$/);
+    if (bold) {
+      return (
+        <strong key={i} className="font-semibold">
+          {bold[1]}
+        </strong>
+      );
+    }
+    const italic = part.match(/^\*(.+?)\*$/);
+    if (italic) {
+      return <em key={i}>{italic[1]}</em>;
+    }
+    return part;
+  });
+}
+
+function renderAdvice(text: string): ReactNode[] {
+  return text.split("\n").map((line, i) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      return <div key={i} className="h-3" />;
+    }
+
+    const header = trimmed.match(/^#{1,3}\s+(.*)$/);
+    if (header) {
+      return (
+        <p key={i} className="font-display text-base font-bold text-ink">
+          {renderInline(header[1])}
+        </p>
+      );
+    }
+
+    const boldHeader = trimmed.match(/^\*\*(.+?)\*\*$/);
+    if (boldHeader) {
+      return (
+        <p key={i} className="font-display text-base font-bold text-ink">
+          {renderInline(boldHeader[1])}
+        </p>
+      );
+    }
+
+    if (/^[-*•]\s+/.test(trimmed)) {
+      return (
+        <p key={i} className="flex gap-2">
+          <span className="text-teal">•</span>
+          <span>{renderInline(trimmed.replace(/^[-*•]\s+/, ""))}</span>
+        </p>
+      );
+    }
+
+    return <p key={i}>{renderInline(trimmed)}</p>;
+  });
+}
 
 export default function ResumeCoach({
   opportunities,
@@ -114,7 +171,9 @@ export default function ResumeCoach({
           <p className="mb-2 font-mono text-xs font-medium uppercase tracking-widest text-teal">
             AI coach feedback
           </p>
-          <p className="whitespace-pre-line text-sm text-ink/90">{advice || "No advice returned."}</p>
+          <div className="flex flex-col gap-1.5 text-sm text-ink/90">
+            {renderAdvice(advice)}
+          </div>
         </div>
       )}
     </form>
