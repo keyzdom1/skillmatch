@@ -102,7 +102,7 @@ export default function ProfilePage() {
       ) : filled ? (
         <ProfileView profile={profile as ProfileData} onEdit={() => setEditing(true)} />
       ) : (
-        <ProfileForm initial={profile ?? {}} />
+        <ProfileForm initial={profile ?? {}} onSaved={loadProfile} />
       )}
     </div>
   );
