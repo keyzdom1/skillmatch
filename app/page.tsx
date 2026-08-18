@@ -1,7 +1,10 @@
 import Link from "next/link";
 import MatchStamp from "@/components/MatchStamp";
+import { getSessionUser } from "@/lib/auth";
 
-export default function Home() {
+export default async function Home() {
+  const user = await getSessionUser();
+  const profileHref = user ? "/profile" : "/signup";
   return (
     <div className="flex flex-col gap-16 py-10">
       <section className="flex flex-col items-start gap-8">
@@ -24,7 +27,7 @@ export default function Home() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <Link href="/signup" className="btn-primary btn-bounce">
+          <Link href={profileHref} className="btn-primary btn-bounce">
             Build my profile
           </Link>
           <Link
