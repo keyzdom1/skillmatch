@@ -12,7 +12,7 @@ export default async function ResumeCoachPage({
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from("opportunities")
-    .select("*")
+    .select("id, title, company")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 

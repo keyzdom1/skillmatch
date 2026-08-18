@@ -11,6 +11,7 @@ import {
 import type { MatchResult } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const MIN_SCORE = 0.22;
 const MAX_MATCHES = 20;

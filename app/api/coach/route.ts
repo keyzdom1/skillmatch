@@ -10,6 +10,7 @@ import {
 } from "@/lib/ai";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   const supabase = createServerSupabase();
@@ -33,7 +34,11 @@ export async function POST(request: NextRequest) {
     typeof body.resumeText === "string" && body.resumeText.trim()
       ? body.resumeText.trim()
       : null;
-const mode = body.mode === "rewrite" ? "rewrite" : "advice";
+  const resumePath =
+    typeof body.resumePath === "string" && body.resumePath.trim()
+      ? body.resumePath.trim()
+      : null;
+  const mode = body.mode === "rewrite" ? "rewrite" : "advice";
 
   try {
     const { data: profile, error: profileError } = await supabase
@@ -43,12 +48,6 @@ const mode = body.mode === "rewrite" ? "rewrite" : "advice";
       .maybeSingle();
     if (profileError) {
       return NextResponse.json({ error: profileError.message }, { status: 500 });
-    }
-    if (!profile) {
-      return NextResponse.json(
-        { error: "Complete your profile first so the coach has something to work with." },
-        { status: 400 }
-      );
     }
 
     let opportunity: {
@@ -79,23 +78,42 @@ const mode = body.mode === "rewrite" ? "rewrite" : "advice";
       );
     }
 
+    // The profile is optional context: a pasted or uploaded resume is enough.
+    const profileData = profile ?? {
+      full_name: null as string | null,
+      headline: null as string | null,
+      bio: null as string | null,
+      skills: [] as string[],
+      education: null as string | null,
+      experience: null as string | null,
+      resume_url: null as string | null,
+    };
+
     let resumeUsed: string | null = resumeText;
 
     const storedResume =
-      typeof resumeText !== "string" && profile.resume_url
-        ? await extractResumeText(profile.resume_url)
+      !resumeUsed &&
+      profileData.resume_url &&
+      !profileData.resume_url.startsWith("http")
+        ? await extractResumeText(profileData.resume_url)
         : null;
     if (storedResume) resumeUsed = storedResume;
+
+    // A resume uploaded right here on the coach page (not yet saved to the profile).
+    if (!resumeUsed && resumePath) {
+      const freshUpload = await extractResumeText(resumePath);
+      if (freshUpload) resumeUsed = freshUpload;
+    }
 
     const shared = {
       opportunity,
       profile: {
-        fullName: profile.full_name,
-        headline: profile.headline,
-        bio: profile.bio,
-        skills: profile.skills ?? [],
-        education: profile.education,
-        experience: profile.experience,
+        fullName: profileData.full_name,
+        headline: profileData.headline,
+        bio: profileData.bio,
+        skills: profileData.skills ?? [],
+        education: profileData.education,
+        experience: profileData.experience,
       },
       resumeText: resumeUsed,
     };

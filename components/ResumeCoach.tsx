@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { createBrowserClient } from "@/lib/supabase";
 import type { Opportunity } from "@/lib/types";
 
 const inputClass =
   "w-full rounded-control border border-slate/40 bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink";
+
+const REQUEST_TIMEOUT_MS = 150_000;
 
 function renderInline(text: string): ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
@@ -79,25 +82,63 @@ export default function ResumeCoach({
       : ""
   );
   const [resumeText, setResumeText] = useState("");
+  const [resumePath, setResumePath] = useState<string | null>(null);
+  const [resumeName, setResumeName] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [advice, setAdvice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"advice" | "rewrite">("advice");
   const [copied, setCopied] = useState(false);
+  const resumeInput = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(e: React.FormEvent, m: "advice" | "rewrite") {
-    e.preventDefault();
+  async function handleUpload(file: File | null) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      setUploadError("Please upload a PDF resume.");
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const supabase = createBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const path = `${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const { error: uploadError } = await supabase.storage
+        .from("resumes")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      setResumePath(path);
+      setResumeName(file.name);
+      setError(null);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function run(m: "advice" | "rewrite", e?: React.FormEvent) {
+    e?.preventDefault();
     setMode(m);
     setLoading(true);
     setError(null);
     setAdvice(null);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
       const res = await fetch("/api/coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           opportunityId: opportunityId || null,
           resumeText: resumeText || null,
+          resumePath: resumePath || null,
           mode: m,
         }),
       });
@@ -107,8 +148,17 @@ export default function ResumeCoach({
       }
       setAdvice(data.advice ?? "");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not generate advice");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError(
+          "This took too long — the free AI model may be busy. Please try again."
+        );
+      } else {
+        setError(
+          err instanceof Error ? err.message : "Could not generate advice"
+        );
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }
@@ -124,8 +174,28 @@ export default function ResumeCoach({
     }
   }
 
+  function downloadAdvice() {
+    if (!advice) return;
+    const blob = new Blob([advice], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "skillmatch-tailored-resume.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const resumeHint = resumeName
+    ? "(optional — the resume you just uploaded will be used)"
+    : hasStoredResume
+      ? "(optional — we'll use the resume you uploaded to your profile)"
+      : "(optional — your profile is used too)";
+
   return (
-    <form onSubmit={(e) => handleSubmit(e, mode)} className="card flex flex-col gap-4">
+    <form
+      onSubmit={(e) => run(mode, e)}
+      className="card flex flex-col gap-4"
+    >
       <div className="flex flex-col gap-1">
         <label htmlFor="coach-opportunity" className="text-sm font-medium">
           Target opportunity
@@ -148,12 +218,7 @@ export default function ResumeCoach({
 
       <div className="flex flex-col gap-1">
         <label htmlFor="coach-resume" className="text-sm font-medium">
-          Paste your resume text{" "}
-          <span className="font-normal text-ink/50">
-            {hasStoredResume
-              ? "(optional — we'll use the resume you uploaded to your profile)"
-              : "(optional — your profile is used too)"}
-          </span>
+          Paste your resume text <span className="font-normal text-ink/50">{resumeHint}</span>
         </label>
         <textarea
           id="coach-resume"
@@ -165,6 +230,44 @@ export default function ResumeCoach({
         />
       </div>
 
+      <div className="flex flex-wrap items-center gap-3 rounded-control border border-slate/30 bg-paper px-3 py-2">
+        <span className="text-sm font-medium">Resume file:</span>
+        {resumeName ? (
+          <>
+            <span className="break-all text-sm text-teal">✓ {resumeName} ready</span>
+            <button
+              type="button"
+              onClick={() => resumeInput.current?.click()}
+              className="rounded-control border border-ink/20 px-2.5 py-1 text-xs font-medium hover:bg-ink hover:text-paper"
+            >
+              Replace
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => resumeInput.current?.click()}
+            disabled={uploading}
+            className="rounded-control border border-ink/20 px-2.5 py-1 text-xs font-medium hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {uploading ? "Uploading…" : "Upload PDF"}
+          </button>
+        )}
+        {!resumeName && hasStoredResume && (
+          <span className="text-xs text-ink/50">
+            (the resume on your profile is used too)
+          </span>
+        )}
+        <input
+          ref={resumeInput}
+          type="file"
+          accept=".pdf"
+          className="hidden"
+          onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
+        />
+      </div>
+
+      {uploadError && <p className="text-sm font-medium text-coral">{uploadError}</p>}
       {error && <p className="text-sm font-medium text-coral">{error}</p>}
       {loading && (
         <p className="text-sm text-ink/60">
@@ -176,16 +279,16 @@ export default function ResumeCoach({
 
       <div className="flex flex-wrap items-center gap-3">
         <button
-          type="submit"
-          onClick={() => setMode("advice")}
+          type="button"
+          onClick={() => run("advice")}
           disabled={loading}
           className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading && mode === "advice" ? "Reviewing…" : "Get AI advice"}
         </button>
         <button
-          type="submit"
-          onClick={() => setMode("rewrite")}
+          type="button"
+          onClick={() => run("rewrite")}
           disabled={loading}
           className="rounded-control border border-teal px-4 py-2 text-sm font-medium text-teal hover:bg-teal hover:text-paper disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -200,11 +303,11 @@ export default function ResumeCoach({
 
       {advice !== null && (
         <div className="rounded-control border border-slate/30 bg-paper p-4">
-          <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
             <p className="font-mono text-xs font-medium uppercase tracking-widest text-teal">
               {mode === "rewrite" ? "Your tailored resume" : "AI coach feedback"}
             </p>
-            {mode === "rewrite" && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={copyAdvice}
@@ -212,7 +315,16 @@ export default function ResumeCoach({
               >
                 {copied ? "Copied!" : "Copy to clipboard"}
               </button>
-            )}
+              {mode === "rewrite" && (
+                <button
+                  type="button"
+                  onClick={downloadAdvice}
+                  className="rounded-control border border-ink/20 px-2.5 py-1 text-xs font-medium hover:bg-ink hover:text-paper"
+                >
+                  Download .txt
+                </button>
+              )}
+            </div>
           </div>
           <div className="flex flex-col gap-1.5 text-sm text-ink/90">
             {renderAdvice(advice)}

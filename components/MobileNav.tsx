@@ -138,6 +138,9 @@ export default function MobileNav({
             <Link href="/profile" onClick={() => setOpen(false)} className={linkClass}>
               Profile
             </Link>
+            <Link href="/resume-coach" onClick={() => setOpen(false)} className={linkClass}>
+              AI Resume
+            </Link>
           </>
         )}
         {signedIn && isAdmin && (

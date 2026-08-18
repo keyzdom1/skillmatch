@@ -52,6 +52,12 @@ export default async function Header() {
               >
                 Profile
               </Link>
+              <Link
+                href="/resume-coach"
+                className="text-sm font-medium text-teal hover:underline"
+              >
+                AI Resume
+              </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
