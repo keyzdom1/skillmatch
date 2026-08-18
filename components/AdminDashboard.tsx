@@ -6,7 +6,7 @@ import Tag from "./Tag";
 type OverviewData = {
   me: string;
   stats: {
-    profiles: number;
+    accounts: number;
     opportunities: number;
     active: number;
     applications: number;
@@ -199,7 +199,7 @@ export default function AdminDashboard() {
   return (
     <div className="flex flex-col gap-8">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatsCard label="Profiles" value={data.stats.profiles} />
+        <StatsCard label="Accounts" value={data.stats.accounts} />
         <StatsCard label="Opportunities" value={data.stats.opportunities} />
         <StatsCard label="Active jobs" value={data.stats.active} />
         <StatsCard label="Applications" value={data.stats.applications} />

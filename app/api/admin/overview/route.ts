@@ -14,12 +14,10 @@ export async function GET() {
     const admin = createAdminClient();
 
     const [
-      { count: profiles },
       { count: totalOpportunities },
       { count: active },
       { count: applications },
     ] = await Promise.all([
-        admin.from("profiles").select("id", { count: "exact", head: true }),
         admin.from("opportunities").select("id", { count: "exact", head: true }),
         admin
           .from("opportunities")
@@ -34,8 +32,7 @@ export async function GET() {
         admin
           .from("profiles")
           .select("id, full_name, headline, skills, created_at")
-          .order("created_at", { ascending: false })
-          .limit(200),
+          .limit(1000),
         admin
           .from("opportunities")
           .select(
@@ -52,18 +49,29 @@ export async function GET() {
           .limit(100),
       ]);
 
-    const emailById = new Map(
-      (authUsers?.users ?? []).map((u) => [u.id, u.email ?? ""])
-    );
+    const profileById = new Map((profilesData ?? []).map((p) => [p.id, p]));
 
-    const users = (profilesData ?? []).map((p) => ({
-      id: p.id,
-      email: emailById.get(p.id) ?? "",
-      full_name: p.full_name,
-      headline: p.headline,
-      skills: p.skills,
-      created_at: p.created_at,
-    }));
+    const users = (authUsers?.users ?? [])
+      .slice()
+      .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+      .map((u) => {
+        const profile = profileById.get(u.id);
+        const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+        const metaName =
+          typeof meta.full_name === "string"
+            ? meta.full_name
+            : typeof meta.name === "string"
+              ? meta.name
+              : null;
+        return {
+          id: u.id,
+          email: u.email ?? "",
+          full_name: profile?.full_name ?? metaName ?? null,
+          headline: profile?.headline ?? null,
+          skills: profile?.skills ?? [],
+          created_at: profile?.created_at ?? u.created_at,
+        };
+      });
 
     const opportunities = (oppsData ?? []).map((o) => ({
       id: o.id,
@@ -96,7 +104,7 @@ export async function GET() {
     return NextResponse.json({
       me: adminUser.id,
       stats: {
-        profiles: profiles ?? 0,
+        accounts: (authUsers?.users ?? []).length,
         opportunities: totalOpportunities ?? 0,
         active: active ?? 0,
         applications: applications ?? 0,
