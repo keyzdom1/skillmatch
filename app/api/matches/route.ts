@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabaseServer";
 import { createAdminClient } from "@/lib/supabase";
 import { getEmbedding, buildProfileEmbeddingText } from "@/lib/embeddings";
-import { skillOverlap, profileSignalsStudent } from "@/lib/skillMatch";
+import { extractResumeText } from "@/lib/resumeExtract";
+import {
+  skillOverlap,
+  profileSignalsStudent,
+  skillsFromText,
+} from "@/lib/skillMatch";
 import type { MatchResult } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const MIN_SCORE = 0.18;
+const MIN_SCORE = 0.22;
 const MAX_MATCHES = 20;
 
 function clampScore(value: number): number {
@@ -40,7 +45,15 @@ export async function POST() {
       );
     }
 
-    const embedding = await getEmbedding(buildProfileEmbeddingText(profile));
+    const resumeText =
+      profile.resume_url && !profile.resume_url.startsWith("http")
+        ? await extractResumeText(profile.resume_url)
+        : null;
+
+    const embedding = await getEmbedding(
+      buildProfileEmbeddingText(profile) +
+        (resumeText ? `\nResume:\n${resumeText.slice(0, 4000)}` : "")
+    );
 
     type MatchRow = {
       id: string;
@@ -66,7 +79,20 @@ export async function POST() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const profileSkills = profile.skills ?? [];
+    const resumeSkills = skillsFromText(
+      [
+        profile.headline,
+        profile.bio,
+        profile.education,
+        profile.experience,
+        resumeText,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    );
+    const profileSkills = Array.from(
+      new Set([...(profile.skills ?? []), ...resumeSkills])
+    );
     const isStudent = profileSignalsStudent(profile);
 
     const matches = (data ?? [])
@@ -116,7 +142,7 @@ export async function POST() {
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, MAX_MATCHES) as MatchResult[];
 
-    return NextResponse.json({ matches });
+    return NextResponse.json({ matches, resumeUsed: Boolean(resumeText) });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Matching failed" },

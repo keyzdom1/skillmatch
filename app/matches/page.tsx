@@ -9,6 +9,7 @@ export default function MatchesPage() {
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resumeUsed, setResumeUsed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,6 +19,7 @@ export default function MatchesPage() {
         if (cancelled) return;
         if (!ok) throw new Error(data?.error ?? "Matching failed");
         setMatches(data.matches ?? []);
+        setResumeUsed(Boolean(data.resumeUsed));
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "Matching failed");
@@ -37,6 +39,7 @@ export default function MatchesPage() {
         <p className="mt-1 text-sm text-ink/60">
           Ranked by how well your skills and background fit each role — the
           stamp is your match score.
+          {resumeUsed && " Your uploaded resume is included in the ranking."}
         </p>
       </div>
 

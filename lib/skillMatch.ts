@@ -157,6 +157,42 @@ export function skillOverlap(
   return { matched, ratio };
 }
 
+const KNOWN_TERMS: string[] = (() => {
+  const seen = new Set<string>();
+  const terms: string[] = [];
+  for (const key of Object.keys(SKILL_ALIASES)) {
+    const term = key.trim();
+    if (term && !seen.has(term)) {
+      seen.add(term);
+      terms.push(term);
+    }
+  }
+  return terms.sort((a, b) => b.length - a.length);
+})();
+
+const TEXT_SCAN_EXCLUDE = new Set([
+  "go", // too ambiguous with the everyday English verb
+]);
+
+function termPattern(term: string): RegExp {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-z0-9+#.])${escaped}($|[^a-z0-9+#.])`, "i");
+}
+
+// Scan free text (e.g. a resume) for known skills. Multi-word terms are
+// matched first so longer phrases win over their single-word parts.
+export function skillsFromText(text: string): string[] {
+  const haystack = String(text ?? "").toLowerCase();
+  const found = new Set<string>();
+  for (const term of KNOWN_TERMS) {
+    if (TEXT_SCAN_EXCLUDE.has(term)) continue;
+    if (termPattern(term).test(haystack)) {
+      found.add(normalizeSkill(term));
+    }
+  }
+  return Array.from(found);
+}
+
 // Heuristic: does this profile look like a student/graduate (boosts
 // internship-type opportunities)?
 export function profileSignalsStudent(profile: {
