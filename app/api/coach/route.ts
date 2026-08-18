@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabaseServer";
+import { extractResumeText } from "@/lib/resumeExtract";
 import {
   generateChat,
   buildResumeCoachPrompt,
@@ -31,12 +32,12 @@ export async function POST(request: NextRequest) {
     typeof body.resumeText === "string" && body.resumeText.trim()
       ? body.resumeText.trim()
       : null;
-  const mode = body.mode === "rewrite" ? "rewrite" : "advice";
+const mode = body.mode === "rewrite" ? "rewrite" : "advice";
 
   try {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("full_name, headline, bio, skills, education, experience")
+      .select("full_name, headline, bio, skills, education, experience, resume_url")
       .eq("id", user.id)
       .maybeSingle();
     if (profileError) {
@@ -77,6 +78,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let resumeUsed: string | null = resumeText;
+
+    const storedResume =
+      typeof resumeText !== "string" && profile.resume_url
+        ? await extractResumeText(profile.resume_url)
+        : null;
+    if (storedResume) resumeUsed = storedResume;
+
     const shared = {
       opportunity,
       profile: {
@@ -87,7 +96,7 @@ export async function POST(request: NextRequest) {
         education: profile.education,
         experience: profile.experience,
       },
-      resumeText,
+      resumeText: resumeUsed,
     };
 
     const prompt =
@@ -97,7 +106,12 @@ export async function POST(request: NextRequest) {
 
     const advice = await generateChat(prompt, mode === "rewrite" ? 2000 : 1000);
 
-    return NextResponse.json({ advice, opportunity, mode });
+    return NextResponse.json({
+      advice,
+      opportunity,
+      mode,
+      usedStoredResume: storedResume !== null,
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Could not generate advice" },

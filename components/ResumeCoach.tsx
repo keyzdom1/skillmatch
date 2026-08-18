@@ -67,9 +67,11 @@ function renderAdvice(text: string): ReactNode[] {
 export default function ResumeCoach({
   opportunities,
   initialOpportunityId,
+  hasStoredResume = false,
 }: {
   opportunities: Opportunity[];
   initialOpportunityId: string | null;
+  hasStoredResume?: boolean;
 }) {
   const [opportunityId, setOpportunityId] = useState<string>(
     initialOpportunityId && opportunities.some((o) => o.id === initialOpportunityId)
@@ -147,7 +149,11 @@ export default function ResumeCoach({
       <div className="flex flex-col gap-1">
         <label htmlFor="coach-resume" className="text-sm font-medium">
           Paste your resume text{" "}
-          <span className="font-normal text-ink/50">(optional — your profile is used too)</span>
+          <span className="font-normal text-ink/50">
+            {hasStoredResume
+              ? "(optional — we'll use the resume you uploaded to your profile)"
+              : "(optional — your profile is used too)"}
+          </span>
         </label>
         <textarea
           id="coach-resume"

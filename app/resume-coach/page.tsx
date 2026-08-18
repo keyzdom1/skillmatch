@@ -16,6 +16,20 @@ export default async function ResumeCoachPage({
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("resume_url")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
+  const hasStoredResume = Boolean(
+    profile?.resume_url && !profile.resume_url.startsWith("http")
+  );
+
   const opportunities = (data ?? []) as Opportunity[];
   const initialOpportunityId = searchParams.opportunityId ?? null;
 
@@ -34,6 +48,7 @@ export default async function ResumeCoachPage({
         <ResumeCoach
           opportunities={opportunities}
           initialOpportunityId={initialOpportunityId}
+          hasStoredResume={hasStoredResume}
         />
       )}
       <p className="text-xs text-ink/50">
