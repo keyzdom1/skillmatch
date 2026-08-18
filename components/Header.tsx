@@ -32,7 +32,6 @@ export default async function Header() {
           Skill<span className="text-teal">Match</span>
         </Link>
         <nav className="hidden items-center gap-3 sm:gap-5 md:flex">
-          <ThemeToggle />
           <Link
             href="/opportunities"
             className="text-sm font-medium text-ink/70 hover:text-ink"
@@ -105,6 +104,7 @@ export default async function Header() {
               </Link>
             </>
           )}
+          <ThemeToggle />
         </nav>
         <div className="flex items-center gap-2 md:hidden">
           <ThemeToggle />
