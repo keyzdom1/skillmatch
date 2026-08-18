@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SkillMatch job importer — Remotive + Arbeitnow → opportunities (with embeddings).
+// SkillMatch job importer — Remotive + Arbeitnow + RemoteOK → opportunities (with embeddings).
 // Usage: node scripts/import-jobs.mjs [--dry-run]
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, HF_API_KEY (from env or .env.local)
 
@@ -115,6 +115,33 @@ async function fetchArbeitnow() {
   }));
 }
 
+async function fetchRemoteOk() {
+  const res = await fetch("https://remoteok.com/api", {
+    headers: { "User-Agent": "SkillMatch-Importer/1.0" },
+  });
+  if (!res.ok) throw new Error(`remoteok http ${res.status}`);
+  const data = await res.json();
+  return (Array.isArray(data) ? data : [])
+    .filter((j) => j && typeof j === "object" && j.position && j.id)
+    .map((j) => {
+      const loc = String(j.location ?? "").trim();
+      const location = /worldwide|global|🌏|🌍|🌎|🌐/i.test(loc)
+        ? "Remote (worldwide)"
+        : loc || "Remote";
+      return {
+        source: "remoteok",
+        external_id: String(j.id),
+        title: String(j.position ?? "").trim(),
+        description: stripHtml(j.description).slice(0, MAX_DESC),
+        company: j.company || null,
+        location,
+        type: detectType(j.position),
+        skills: cleanSkills(j.tags),
+        listing_url: j.url || j.apply_url || null,
+      };
+    });
+}
+
 // ---------------------------------------------------------------------------
 // embeddings (same model/normalization as the app)
 // ---------------------------------------------------------------------------
@@ -211,7 +238,7 @@ async function main() {
   console.log(isDryRun ? "DRY RUN — nothing will be written" : "Import starting");
 
   const all = [];
-  for (const fetchSource of [fetchRemotive, fetchArbeitnow]) {
+  for (const fetchSource of [fetchRemotive, fetchArbeitnow, fetchRemoteOk]) {
     try {
       const jobs = await fetchSource();
       all.push(...jobs);
