@@ -43,6 +43,7 @@ export interface MatchResult {
   skills: string[];
   created_at: string;
   similarity: number;
+  match_reasons?: string[];
 }
 
 export const OPPORTUNITY_TYPES = [

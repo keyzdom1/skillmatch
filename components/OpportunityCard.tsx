@@ -27,9 +27,11 @@ type CardOpportunity = {
 export default function OpportunityCard({
   opportunity,
   matchPercent,
+  matchReasons,
 }: {
   opportunity: CardOpportunity;
   matchPercent?: number;
+  matchReasons?: string[];
 }) {
   const deadline = formatDeadline(opportunity.deadline);
   const closed = opportunity.deadline
@@ -53,6 +55,18 @@ export default function OpportunityCard({
         </div>
         {matchPercent !== undefined && <MatchStamp percent={matchPercent} />}
       </div>
+      {matchReasons && matchReasons.length > 0 && (
+        <ul className="flex flex-wrap items-center gap-1.5">
+          {matchReasons.map((reason) => (
+            <li
+              key={reason}
+              className="text-xs font-medium text-teal"
+            >
+              ✓ {reason}
+            </li>
+          ))}
+        </ul>
+      )}
       <p className="line-clamp-3 break-words text-sm text-ink/70">
         {stripHtml(opportunity.description)}
       </p>

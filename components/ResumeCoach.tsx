@@ -80,9 +80,12 @@ export default function ResumeCoach({
   const [advice, setAdvice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<"advice" | "rewrite">("advice");
+  const [copied, setCopied] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent, m: "advice" | "rewrite") {
     e.preventDefault();
+    setMode(m);
     setLoading(true);
     setError(null);
     setAdvice(null);
@@ -93,6 +96,7 @@ export default function ResumeCoach({
         body: JSON.stringify({
           opportunityId: opportunityId || null,
           resumeText: resumeText || null,
+          mode: m,
         }),
       });
       const data = await res.json().catch(() => null);
@@ -107,8 +111,19 @@ export default function ResumeCoach({
     }
   }
 
+  async function copyAdvice() {
+    if (!advice) return;
+    try {
+      await navigator.clipboard.writeText(advice);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable — leave the text selectable.
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="card flex flex-col gap-4">
+    <form onSubmit={(e) => handleSubmit(e, mode)} className="card flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <label htmlFor="coach-opportunity" className="text-sm font-medium">
           Target opportunity
@@ -147,17 +162,28 @@ export default function ResumeCoach({
       {error && <p className="text-sm font-medium text-coral">{error}</p>}
       {loading && (
         <p className="text-sm text-ink/60">
-          Asking the AI coach to review your resume… (free models can take a moment)
+          {mode === "rewrite"
+            ? "Rewriting your resume to fit the role… (free models can take a moment)"
+            : "Asking the AI coach to review your resume… (free models can take a moment)"}
         </p>
       )}
 
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
+          onClick={() => setMode("advice")}
           disabled={loading}
           className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Reviewing…" : "Get AI advice"}
+          {loading && mode === "advice" ? "Reviewing…" : "Get AI advice"}
+        </button>
+        <button
+          type="submit"
+          onClick={() => setMode("rewrite")}
+          disabled={loading}
+          className="rounded-control border border-teal px-4 py-2 text-sm font-medium text-teal hover:bg-teal hover:text-paper disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading && mode === "rewrite" ? "Rewriting…" : "Rewrite my resume"}
         </button>
         {advice && (
           <Link href="/profile" className="text-sm font-medium text-teal hover:underline">
@@ -168,9 +194,20 @@ export default function ResumeCoach({
 
       {advice !== null && (
         <div className="rounded-control border border-slate/30 bg-paper p-4">
-          <p className="mb-2 font-mono text-xs font-medium uppercase tracking-widest text-teal">
-            AI coach feedback
-          </p>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="font-mono text-xs font-medium uppercase tracking-widest text-teal">
+              {mode === "rewrite" ? "Your tailored resume" : "AI coach feedback"}
+            </p>
+            {mode === "rewrite" && (
+              <button
+                type="button"
+                onClick={copyAdvice}
+                className="rounded-control border border-ink/20 px-2.5 py-1 text-xs font-medium hover:bg-ink hover:text-paper"
+              >
+                {copied ? "Copied!" : "Copy to clipboard"}
+              </button>
+            )}
+          </div>
           <div className="flex flex-col gap-1.5 text-sm text-ink/90">
             {renderAdvice(advice)}
           </div>

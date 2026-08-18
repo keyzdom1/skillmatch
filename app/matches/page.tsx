@@ -35,7 +35,8 @@ export default function MatchesPage() {
       <div>
         <h1 className="font-display text-3xl font-bold">Your matches</h1>
         <p className="mt-1 text-sm text-ink/60">
-          Ranked by similarity against your profile — the stamp is your match score.
+          Ranked by how well your skills and background fit each role — the
+          stamp is your match score.
         </p>
       </div>
 
@@ -74,11 +75,19 @@ export default function MatchesPage() {
       {!loading && !error && matches.length > 0 && (
         <div className="grid gap-5 sm:grid-cols-2">
           {matches.map((match) => (
-            <OpportunityCard
-              key={match.id}
-              opportunity={match}
-              matchPercent={match.similarity}
-            />
+            <div key={match.id} className="flex min-w-0 flex-col gap-2">
+              <OpportunityCard
+                opportunity={match}
+                matchPercent={match.similarity}
+                matchReasons={match.match_reasons}
+              />
+              <Link
+                href={`/resume-coach?opportunityId=${match.id}`}
+                className="text-sm font-medium text-teal hover:underline"
+              >
+                Tailor my resume for this job →
+              </Link>
+            </div>
           ))}
         </div>
       )}

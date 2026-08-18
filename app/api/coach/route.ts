@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabaseServer";
-import { generateChat, buildResumeCoachPrompt, isAiConfigured } from "@/lib/ai";
+import {
+  generateChat,
+  buildResumeCoachPrompt,
+  buildResumeRewritePrompt,
+  isAiConfigured,
+} from "@/lib/ai";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +31,7 @@ export async function POST(request: NextRequest) {
     typeof body.resumeText === "string" && body.resumeText.trim()
       ? body.resumeText.trim()
       : null;
+  const mode = body.mode === "rewrite" ? "rewrite" : "advice";
 
   try {
     const { data: profile, error: profileError } = await supabase
@@ -71,7 +77,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = buildResumeCoachPrompt({
+    const shared = {
       opportunity,
       profile: {
         fullName: profile.full_name,
@@ -82,11 +88,16 @@ export async function POST(request: NextRequest) {
         experience: profile.experience,
       },
       resumeText,
-    });
+    };
 
-    const advice = await generateChat(prompt);
+    const prompt =
+      mode === "rewrite"
+        ? buildResumeRewritePrompt(shared)
+        : buildResumeCoachPrompt(shared);
 
-    return NextResponse.json({ advice, opportunity });
+    const advice = await generateChat(prompt, mode === "rewrite" ? 2000 : 1000);
+
+    return NextResponse.json({ advice, opportunity, mode });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Could not generate advice" },
