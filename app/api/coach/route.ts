@@ -5,6 +5,7 @@ import {
   generateChat,
   buildResumeCoachPrompt,
   buildResumeRewritePrompt,
+  buildResumeRewriteFromAdvicePrompt,
   isAiConfigured,
 } from "@/lib/ai";
 
@@ -99,10 +100,18 @@ const mode = body.mode === "rewrite" ? "rewrite" : "advice";
       resumeText: resumeUsed,
     };
 
-    const prompt =
-      mode === "rewrite"
-        ? buildResumeRewritePrompt(shared)
-        : buildResumeCoachPrompt(shared);
+    let prompt: string;
+    if (mode === "rewrite" && resumeUsed) {
+      const coachAdvice = await generateChat(
+        buildResumeCoachPrompt(shared),
+        1000
+      );
+      prompt = buildResumeRewriteFromAdvicePrompt(shared, coachAdvice);
+    } else if (mode === "rewrite") {
+      prompt = buildResumeRewritePrompt(shared);
+    } else {
+      prompt = buildResumeCoachPrompt(shared);
+    }
 
     const advice = await generateChat(prompt, mode === "rewrite" ? 2000 : 1000);
 

@@ -169,7 +169,7 @@ export default function ResumeCoach({
       {loading && (
         <p className="text-sm text-ink/60">
           {mode === "rewrite"
-            ? "Rewriting your resume to fit the role… (free models can take a moment)"
+            ? "Applying the advice to your resume… (free models can take a moment)"
             : "Asking the AI coach to review your resume… (free models can take a moment)"}
         </p>
       )}
