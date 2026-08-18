@@ -26,7 +26,7 @@ export default async function Header() {
   const isAdmin = isAdminEmail(user?.email);
 
   return (
-    <header className="border-b border-slate/30 bg-paper">
+    <header className="sticky top-0 z-40 border-b border-slate/30 bg-paper">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="font-display text-xl font-bold tracking-tight">
           Skill<span className="text-teal">Match</span>
