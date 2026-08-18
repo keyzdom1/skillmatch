@@ -60,6 +60,33 @@ export default function ProfileForm({
   }
 
   useEffect(() => {
+    if (form.fullName.trim()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createBrowserClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
+        const name =
+          typeof meta.full_name === "string"
+            ? meta.full_name
+            : typeof meta.name === "string"
+              ? meta.name
+              : null;
+        if (!cancelled && name) set("fullName", name);
+      } catch {
+        // Leave empty; user can type it.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const path = form.resumePath;
     if (!path || path.startsWith("http") || form.resumeSignedUrl) return;
     let cancelled = false;
